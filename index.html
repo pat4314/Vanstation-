@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>ระบบจองรถ</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h2>ฟอร์มจองรถ</h2>
+  <form id="bookingForm">
+    <label>เลขที่ใบจอง: <input type="text" id="bookingNumber" required></label><br>
+    <label>ชื่อผู้จอง: <input type="text" id="customerName" required></label><br>
+    <label>เบอร์โทรศัพท์: <input type="text" id="phone" required></label><br>
+    <label>จำนวนผู้โดยสาร: <input type="number" id="passengers" required></label><br>
+    <label>ประเภทรถ: <input type="text" id="carType"></label><br>
+    <label>ประเภทการเดินทาง: <input type="text" id="tripType"></label><br>
+    <label>วันที่เดินทาง: <input type="date" id="travelDate"></label><br>
+    <label>เวลานัดหมาย: <input type="time" id="travelTime"></label><br>
+    <label>จุดรับ: <input type="text" id="pickupLocation"></label><br>
+    <label>ปลายทาง: <input type="text" id="destination"></label><br><br>
+    <label>ค่ารถ: <input type="number" id="carPrice"></label><br>
+    <label>ค่าที่พักคนขับ: <input type="number" id="driverAccommodation"></label><br>
+    <label>มัดจำ: <input type="number" id="deposit"></label><br>
+    <label>ราคารวม: <input type="number" id="totalPrice" readonly></label><br>
+    <label>ยอดคงเหลือ: <input type="number" id="remaining" readonly></label><br><br>
+    <button type="submit">บันทึกการจอง</button>
+  </form>
+
+  <div id="bookingModal" class="hidden">
+    <div id="bookingReceipt"></div>
+    <button id="closeModal">ปิด</button>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
