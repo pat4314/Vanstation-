@@ -1,0 +1,142 @@
+
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>Vanstation On Tour</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+</head>
+<body class="bg-gray-100 p-6 font-sans">
+  <h2 class="text-2xl font-bold mb-4">ฟอร์มจองรถ Vanstation</h2>
+  <form id="bookingForm" class="space-y-2">
+    <input type="text" id="bookingNumber" placeholder="เลขที่ใบจอง" class="border p-2 w-full" required>
+    <input type="text" id="customerName" placeholder="ชื่อผู้จอง" class="border p-2 w-full" required>
+    <input type="text" id="phone" placeholder="เบอร์โทรศัพท์" class="border p-2 w-full" required>
+    <input type="number" id="passengers" placeholder="จำนวนผู้โดยสาร" class="border p-2 w-full" required>
+    <input type="text" id="carType" placeholder="ประเภทรถ" class="border p-2 w-full">
+    <input type="text" id="tripType" placeholder="ประเภทการเดินทาง" class="border p-2 w-full">
+    <input type="date" id="travelDate" class="border p-2 w-full">
+    <input type="number" id="numberOfDays" placeholder="จำนวนวันเดินทาง" class="border p-2 w-full" required>
+    <input type="time" id="travelTime" class="border p-2 w-full">
+    <input type="text" id="pickupLocation" placeholder="จุดรับ" class="border p-2 w-full">
+    <input type="text" id="destination" placeholder="ปลายทาง" class="border p-2 w-full">
+    <input type="number" id="carPricePerDay" placeholder="ราคาค่ารถต่อวัน" class="border p-2 w-full">
+    <input type="number" id="driverAccommodation" placeholder="ค่าที่พักคนขับ" class="border p-2 w-full">
+    <input type="number" id="deposit" placeholder="มัดจำ" class="border p-2 w-full">
+    <input type="number" id="totalPrice" placeholder="ราคารวม" class="border p-2 w-full" readonly>
+    <input type="number" id="remaining" placeholder="ยอดคงเหลือ" class="border p-2 w-full" readonly>
+    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">บันทึกการจอง</button>
+  </form>
+
+  <div id="bookingModal" class="fixed inset-0 hidden bg-black bg-opacity-50 flex justify-center items-center">
+    <div class="bg-white p-6 rounded-lg max-w-md w-full max-h-[95vh] overflow-y-auto shadow-lg relative">
+      <button id="closeModal" class="absolute top-2 right-2 text-gray-500 hover:text-gray-900">&times;</button>
+      <div class="text-center mb-4">
+        <img src="https://storage.googleapis.com/prompt-assets/logo/vanstation-logo.png" alt="logo" class="h-20 mx-auto">
+      </div>
+      <div id="bookingReceipt" class="space-y-2"></div>
+      <div class="text-center mt-4">
+        <button id="downloadReceipt" class="bg-indigo-600 text-white px-4 py-2 rounded">ดาวน์โหลดใบจอง</button>
+      </div>
+      <div class="text-right mt-4 font-semibold">
+        <p>รวมทั้งหมด: ฿ <span id="totalSum"></span></p>
+      </div>
+      <div class="flex justify-between mt-4">
+        <button id="shareLine" class="bg-green-500 text-white px-4 py-2 rounded">แชร์ผ่าน LINE</button>
+        <button id="resetForm" class="bg-gray-500 text-white px-4 py-2 rounded">จองใหม่</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function calculateTotalPrice() {
+      let carPricePerDay = parseFloat(document.getElementById('carPricePerDay').value) || 0;
+      let numberOfDays = parseFloat(document.getElementById('numberOfDays').value) || 1;
+      let driverAccommodation = parseFloat(document.getElementById('driverAccommodation').value) || 0;
+      let carPrice = carPricePerDay * numberOfDays;
+      let totalPrice = carPrice + driverAccommodation;
+      let deposit = parseFloat(document.getElementById('deposit').value) || 0;
+      let remaining = totalPrice - deposit;
+
+      document.getElementById('totalPrice').value = totalPrice;
+      document.getElementById('remaining').value = remaining;
+    }
+
+    document.getElementById('bookingForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+      calculateTotalPrice();
+
+      let bookingNumber = document.getElementById('bookingNumber').value;
+      let customerName = document.getElementById('customerName').value;
+      let phone = document.getElementById('phone').value;
+      let passengers = document.getElementById('passengers').value;
+      let carType = document.getElementById('carType').value;
+      let tripType = document.getElementById('tripType').value;
+      let travelDate = document.getElementById('travelDate').value;
+      let numberOfDays = document.getElementById('numberOfDays').value;
+      let travelTime = document.getElementById('travelTime').value;
+      let pickupLocation = document.getElementById('pickupLocation').value;
+      let destination = document.getElementById('destination').value;
+
+      const receiptHTML = `
+        <h3 class="text-xl font-semibold mb-2">ใบจองเลขที่ ${bookingNumber}</h3>
+        <p>ชื่อผู้จอง: ${customerName}</p>
+        <p>เบอร์โทรศัพท์: ${phone}</p>
+        <p>จำนวนผู้โดยสาร: ${passengers} ท่าน</p>
+        <p>ประเภทรถ: ${carType}</p>
+        <p>ประเภทการเดินทาง: ${tripType}</p>
+        <p>วันที่เดินทาง: ${travelDate}</p>
+        <p>จำนวนวันเดินทาง: ${numberOfDays} วัน</p>
+        <p>เวลานัดหมาย: ${travelTime}</p>
+        <p>จุดรับ: ${pickupLocation}</p>
+        <p>ปลายทาง: ${destination}</p>
+        <p>ราคารวมทั้งหมด: ฿ ${document.getElementById('totalPrice').value}</p>
+        <p>มัดจำ: ฿ ${document.getElementById('deposit').value}</p>
+        <p>คงเหลือ: ฿ ${document.getElementById('remaining').value}</p>
+      `;
+      document.getElementById('bookingReceipt').innerHTML = receiptHTML;
+      document.getElementById('totalSum').innerText = document.getElementById('totalPrice').value;
+      document.getElementById('bookingModal').classList.remove('hidden');
+    });
+
+    document.getElementById('closeModal').addEventListener('click', function() {
+      document.getElementById('bookingModal').classList.add('hidden');
+    });
+
+    document.getElementById('resetForm').addEventListener('click', function() {
+      document.getElementById('bookingForm').reset();
+      document.getElementById('bookingModal').classList.add('hidden');
+    });
+
+    document.getElementById('shareLine').addEventListener('click', function() {
+      liff.shareTargetPicker([{
+        type: "text",
+        text: document.getElementById('bookingReceipt').innerText
+      }]).catch(err => {
+        console.error("แชร์ไม่สำเร็จ", err);
+      });
+    });
+
+    document.getElementById('downloadReceipt').addEventListener('click', function () {
+      const blob = new Blob([document.getElementById('bookingReceipt').innerText], { type: 'text/plain' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = "booking-receipt.txt";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+
+    window.onload = function () {
+      liff.init({ liffId: '2007882785-L2wJ1z5x' }, () => {
+        if (!liff.isLoggedIn()) {
+          liff.login();
+        }
+      }, err => {
+        console.error('LIFF init failed', err);
+      });
+    };
+  </script>
+</body>
+</html>
